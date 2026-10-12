@@ -5,7 +5,7 @@ from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 # Токен вашего бота от BotFather
-TOKEN = "8679558042:AAHc9Rd2A1bmXic03L_BggnffQVX4dsWFvc"
+TOKEN = os.getenv("TOKEN")
 
 # Ваш Telegram ID
 MY_ID = 8790592838
