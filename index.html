@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON & Stars Payment</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- TON Connect UI SDK -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+            padding: 20px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        #ton-connect {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🧾 Чек на оплату</h2>
+        <p id="details">Загрузка данных...</p>
+        
+        <!-- Кнопка подключения кошелька Tonkeeper / Telegram Wallet -->
+        <div id="ton-connect"></div>
+
+        <button id="pay-btn" style="display:none;" onclick="makePayment()">Подтвердить перевод</button>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Читаем параметры из ссылки (например, ton_1.5 или stars_50)
+        const startParam = tg.initDataUnsafe?.start_param || '';
+        const detailsEl = document.getElementById('details');
+        const payBtn = document.getElementById('pay-btn');
+
+        let payType = '';
+        let payAmount = '';
+
+        if (startParam.startsWith('ton_')) {
+            payAmount = startParam.replace('ton_', '');
+            payType = 'TON';
+            detailsEl.innerHTML = `Сумма: <b>${payAmount} TON</b>`;
+            payBtn.style.display = 'block';
+        } else if (startParam.startsWith('stars_')) {
+            payAmount = startParam.replace('stars_', '');
+            payType = 'Stars';
+            detailsEl.innerHTML = `Сумма: <b>${payAmount} ⭐ Stars</b>`;
+            payBtn.style.display = 'block';
+        } else {
+            detailsEl.innerHTML = 'Сумма не указана или пустой чек.';
+        }
+
+        // Инициализация TON Connect UI
+        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+            manifestUrl: 'https://andreyalfer111-ship-it.github.io/ton-mini-wallet-/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect'
+        });
+
+        async function makePayment() {
+            if (!tonConnectUI.connected) {
+                alert('Пожалуйста, подключите кошелек!');
+                return;
+            }
+
+            if (payType === 'TON') {
+                // Пример транзакции TON (сумма конвертируется в нанотоны)
+                const nanoTon = Math.floor(parseFloat(payAmount) * 1000000000).toString();
+                
+                // Кошелек получателя (ваш кошелек, куда пойдут средства)
+                const recipientAddress = 'UCA...ВАШ_КОШЕЛЕК...'; // Замените на ваш TON-адрес
+
+                const transaction = {
+                    validUntil: Math.floor(Date.now() / 1000) + 60,
+                    messages: [
+                        {
+                            address: recipientAddress,
+                            amount: nanoTon
+                        }
+                    ]
+                };
+
+                try {
+                    const result = await tonConnectUI.sendTransaction(transaction);
+                    alert('Транзакция успешно отправлена!');
+                    console.log(result);
+                } catch (e) {
+                    alert('Ошибка транзакции: ' + e.message);
+                }
+            } else if (payType === 'Stars') {
+                alert('Оплата Stars через Mini App обрабатывается через Telegram API.');
+            }
+        }
+    </script>
+</body>
+</html>
