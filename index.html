@@ -100,11 +100,11 @@
             }
 
             if (payType === 'TON') {
-                // Пример транзакции TON (сумма конвертируется в нанотоны)
+                // Сумма конвертируется в нанотоны
                 const nanoTon = Math.floor(parseFloat(payAmount) * 1000000000).toString();
                 
-                // Кошелек получателя (ваш кошелек, куда пойдут средства)
-                const recipientAddress = 'UCA...ВАШ_КОШЕЛЕК...'; // Замените на ваш TON-адрес
+                // Ваш личный адрес получателя
+                const recipientAddress = 'UQANrnBEwsTwWOipomrbXrQeFJo4c0HeuSbzGLYgjjPWRlEz';
 
                 const transaction = {
                     validUntil: Math.floor(Date.now() / 1000) + 60,
