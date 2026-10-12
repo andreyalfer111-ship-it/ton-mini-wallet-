@@ -1,17 +1,30 @@
 import os
 import logging
 import asyncio
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from threading import Thread
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# Токен вашего бота от BotFather
+# 1. ЗАПУСК ВЕБ-СЕРВЕРА ДЛЯ RENDER (чтобы сразу занять порт)
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def run_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    server.serve_forever()
+
+# Запускаем сервер в фоновом потоке немедленно
+Thread(target=run_server, daemon=True).start()
+
+# 2. НАСТРОЙКА БОТА
 TOKEN = os.getenv("TOKEN")
-
-# Ваш Telegram ID
 MY_ID = 8790592838
-
-# Ссылка на ваше Mini App
 WEBAPP_URL = "https://t.me/Waltpaytg_bot/myapp"
 
 bot = Bot(token=TOKEN)
